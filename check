@@ -1,0 +1,113 @@
+#!/usr/bin/env -S uv run --quiet python
+"""Single entry point for every verification (A1). Run `./check` to list targets."""
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+COVERAGE_JSON = ROOT / ".coverage.json"
+FLOORS = {
+    "fwtriage/model": 90.0,
+    "fwtriage/formats": 90.0,
+    "fwtriage/engine": 90.0,
+    "fwtriage/analyzers": 85.0,
+    "fwtriage/vulns": 85.0,
+    "fwtriage/output": 85.0,
+}
+TOTAL_FLOOR = 90.0
+
+
+def run(*command: str) -> None:
+    print(f"$ {' '.join(command)}", flush=True)
+    if subprocess.call(command, cwd=ROOT) != 0:
+        sys.exit(1)
+
+
+def fmt() -> None:
+    run("ruff", "format", "--check", "src", "tests", "check")
+
+
+def lint() -> None:
+    run("ruff", "check", "src", "tests")
+
+
+def types() -> None:
+    run("mypy")
+
+
+def unit() -> None:
+    run("pytest", "tests/unit", "-q")
+
+
+def guards() -> None:
+    run("pytest", "tests/guards", "-q")
+
+
+def corpus() -> None:
+    run("pytest", "tests/corpus", "-q")
+
+
+def realworld() -> None:
+    run("pytest", "tests/realworld", "-q", "-m", "realworld")
+
+
+def docs() -> None:
+    run("python", "-m", "fwtriage.output.rules_doc", "docs/rules.md")
+
+
+def coverage() -> None:
+    run("pytest", "tests/unit", "tests/corpus", "-q", "--cov", "--cov-report=", f"--cov-report=json:{COVERAGE_JSON}")
+    report = json.loads(COVERAGE_JSON.read_text())
+    failures = [line for line in _floor_lines(report) if line.startswith("FAIL")]
+    print("\n".join(_floor_lines(report)))
+    if failures:
+        sys.exit(1)
+
+
+def _floor_lines(report: dict) -> list[str]:
+    lines = []
+    for package, floor in FLOORS.items():
+        value = _package_percent(report, package)
+        lines.append(f"{'ok  ' if value >= floor else 'FAIL'} {package:<22} {value:6.2f}% (floor {floor}%)")
+    total = report["totals"]["percent_covered"]
+    lines.append(f"{'ok  ' if total >= TOTAL_FLOOR else 'FAIL'} {'total':<22} {total:6.2f}% (floor {TOTAL_FLOOR}%)")
+    return lines
+
+
+def _package_percent(report: dict, package: str) -> float:
+    files = [data["summary"] for name, data in report["files"].items() if f"src/{package}/" in name.replace("\\", "/")]
+    statements = sum(f["num_statements"] + f.get("num_branches", 0) for f in files)
+    covered = sum(f["covered_lines"] + f.get("covered_branches", 0) for f in files)
+    return 100.0 if statements == 0 else 100.0 * covered / statements
+
+
+def all_targets() -> None:
+    for target in (fmt, lint, types, unit, guards, coverage, corpus):
+        target()
+
+
+TARGETS = {
+    "format": fmt,
+    "lint": lint,
+    "types": types,
+    "unit": unit,
+    "guards": guards,
+    "coverage": coverage,
+    "corpus": corpus,
+    "docs": docs,
+    "realworld": realworld,
+    "all": all_targets,
+}
+
+
+def main() -> None:
+    if len(sys.argv) != 2 or sys.argv[1] not in TARGETS:
+        print("usage: ./check TARGET\n\ntargets: " + ", ".join(TARGETS))
+        sys.exit(2)
+    TARGETS[sys.argv[1]]()
+
+
+if __name__ == "__main__":
+    main()
