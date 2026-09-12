@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/voidgrupo/fwtriage/schema/report-1.0.json",
+  "title": "fwtriage report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "tool", "image", "failed", "artifacts", "components", "binaries", "findings", "suppressed", "notices"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {"name": {"const": "fwtriage"}, "version": {"type": "string"}}
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "size", "sha256"],
+      "properties": {
+        "name": {"type": "string"},
+        "size": {"type": "integer", "minimum": 0},
+        "sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"}
+      }
+    },
+    "failed": {"type": "boolean"},
+    "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+    "components": {"type": "array", "items": {"$ref": "#/$defs/component"}},
+    "binaries": {"type": "array", "items": {"$ref": "#/$defs/binary"}},
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+    "suppressed": {
+      "type": "array",
+      "items": {
+        "allOf": [{"$ref": "#/$defs/finding"}],
+        "required": ["reason"],
+        "properties": {"reason": {"type": "string", "minLength": 1}}
+      }
+    },
+    "notices": {"type": "array", "items": {"$ref": "#/$defs/notice"}}
+  },
+  "$defs": {
+    "severity": {"enum": ["info", "low", "medium", "high", "critical"]},
+    "confidence": {"enum": ["indicator", "likely", "confirmed"]},
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "format", "kind", "offset", "size", "description", "file_count", "signing", "children"],
+      "properties": {
+        "path": {"type": "string"},
+        "format": {"type": "string"},
+        "kind": {"enum": ["container", "compression", "filesystem", "identified", "stream"]},
+        "offset": {"type": "integer", "minimum": 0},
+        "size": {"type": ["integer", "null"], "minimum": 0},
+        "description": {"type": "string"},
+        "file_count": {"type": ["integer", "null"], "minimum": 0},
+        "signing": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/signing"}]},
+        "children": {"type": "array", "items": {"$ref": "#/$defs/artifact"}}
+      }
+    },
+    "signing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["integrity", "signatures", "keys", "loaded"],
+      "properties": {
+        "integrity": {"type": "array", "items": {"type": "string"}},
+        "signatures": {"type": "array", "items": {"$ref": "#/$defs/signature"}},
+        "keys": {"type": "array", "items": {"$ref": "#/$defs/signature"}},
+        "loaded": {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "string"}}}
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "algorithm", "key", "covers", "scope", "required", "bits"],
+      "properties": {
+        "node": {"type": "string"},
+        "algorithm": {"type": "string"},
+        "key": {"type": "string"},
+        "covers": {"type": "array", "items": {"type": "string"}},
+        "scope": {"type": "string"},
+        "required": {"type": "boolean"},
+        "bits": {"type": ["integer", "null"]}
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "source", "artifact", "confidence", "cpe", "purl", "vulnerability_total", "vulnerabilities", "data_date"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "source": {"type": "string"},
+        "artifact": {"type": "string"},
+        "confidence": {"$ref": "#/$defs/confidence"},
+        "cpe": {"type": ["string", "null"]},
+        "purl": {"type": ["string", "null"]},
+        "vulnerability_total": {"type": "integer", "minimum": 0},
+        "vulnerabilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "cvss"],
+            "properties": {"id": {"type": "string"}, "cvss": {"type": ["number", "null"]}}
+          }
+        },
+        "data_date": {"type": ["string", "null"]}
+      }
+    },
+    "binary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "artifact", "arch", "canary", "nx", "pie", "relro", "fortify", "static"],
+      "properties": {
+        "path": {"type": "string"},
+        "artifact": {"type": "string"},
+        "arch": {"type": "string"},
+        "canary": {"type": "boolean"},
+        "nx": {"type": "boolean"},
+        "pie": {"type": "boolean"},
+        "relro": {"enum": ["none", "partial", "full"]},
+        "fortify": {"type": "boolean"},
+        "static": {"type": "boolean"}
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": ["rule", "title", "severity", "confidence", "location", "evidence"],
+      "properties": {
+        "rule": {"type": "string", "pattern": "^FWT-[A-Z]{3}-[0-9]{3}$"},
+        "title": {"type": "string", "minLength": 1},
+        "severity": {"$ref": "#/$defs/severity"},
+        "confidence": {"$ref": "#/$defs/confidence"},
+        "location": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["artifact", "entry", "offset", "line"],
+          "properties": {
+            "artifact": {"type": "string"},
+            "entry": {"type": ["string", "null"]},
+            "offset": {"type": ["integer", "null"], "minimum": 0},
+            "line": {"type": ["integer", "null"], "minimum": 1}
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["excerpt", "reproduce"],
+          "properties": {"excerpt": {"type": "string", "minLength": 1}, "reproduce": {"type": "string"}}
+        },
+        "reason": {"type": "string"}
+      }
+    },
+    "notice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "location"],
+      "properties": {"code": {"type": "string"}, "message": {"type": "string"}, "location": {"type": "string"}}
+    }
+  }
+}
