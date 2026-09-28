@@ -1,0 +1,29 @@
+name: Bug report
+description: fwtriage crashed, missed something, or reported something that is not there
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: The command you ran and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: Terminal output, or the relevant part of the JSON report. Mask anything sensitive.
+      render: text
+  - type: input
+    id: image
+    attributes:
+      label: Image
+      description: A public download link or the SHA-256 of a public image, if you can share it. Never attach a client's firmware.
+  - type: input
+    id: version
+    attributes:
+      label: fwtriage version
+      placeholder: fwtriage --version
+    validations:
+      required: true

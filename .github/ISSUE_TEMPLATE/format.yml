@@ -1,0 +1,16 @@
+name: Format request
+description: A container, compression or filesystem fwtriage should understand
+labels: [format]
+body:
+  - type: input
+    id: format
+    attributes:
+      label: Format
+      description: Name, and where it is used (vendor, device family).
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference
+      description: Specification, an open-source reader or writer, and a public sample image if one exists.

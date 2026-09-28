@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security issue in fwtriage
+    url: https://github.com/voidgrupo/fwtriage/security/advisories/new
+    about: Please report privately, as described in SECURITY.md.
