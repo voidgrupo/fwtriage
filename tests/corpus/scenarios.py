@@ -1,7 +1,9 @@
 import bz2
 import gzip
 import hashlib
+import io
 import lzma
+import tarfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
@@ -13,6 +15,7 @@ from .writers.elf import Profile, executable
 from .writers.fit import configuration, fit, fit_with, image_node, signature_node, signed_image, uboot_keys
 from .writers.tree import FileNode, LinkNode, Node
 from .writers.trx import trx
+from .writers.ubi import ubi
 from .writers.uimage import uimage
 
 
@@ -123,6 +126,27 @@ def _signed_well() -> bytes:
     return image + b"\xff" * 512 + uboot_keys([("prod", "sha256,rsa4096", 4096, "conf")])
 
 
+def _ubi_vendor() -> bytes:
+    header = b"HDR1" + b"\x5a\xa5" * 380
+    kernel = fit_with(_kernel_and_fdt(), [configuration("conf-1", LOADS)])
+    return header + ubi([("kernel", kernel), ("rootfs", squashfs.write(exposed_tree()))])
+
+
+def _sysupgrade_tar() -> bytes:
+    buffer = io.BytesIO()
+    members = {
+        "sysupgrade-board/kernel": fit_with(_kernel_and_fdt(), [configuration("conf-1", LOADS)]),
+        "sysupgrade-board/root": squashfs.write(clean_tree()),
+    }
+    with tarfile.open(fileobj=buffer, mode="w", format=tarfile.USTAR_FORMAT) as archive:
+        for name, data in members.items():
+            info = tarfile.TarInfo(name)
+            info.size, info.mtime = len(data), 0
+            archive.addfile(info, io.BytesIO(data))
+    return buffer.getvalue()
+
+
+UBI_ROOT = "ubi@0x2fc › rootfs › squashfs@0x0"
 EXPOSED = "trx@0x0 › part@1 › squashfs@0x0"
 DEEP = "fit@0x0 › ramdisk-1 › gzip@0x0 › cpio@0x0 › /lib/firmware/update.bin › trx@0x0 › part@0"
 
@@ -216,6 +240,50 @@ SCENARIOS = (
         _signed_images_only,
         ("fit@0x0", "fit@0x0 › kernel-1", "fit@0x0 › kernel-1 › lzma@0x0", "fit@0x0 › fdt-1"),
         frozenset({("FWT-SIG-003", "fit@0x0")}),
+    ),
+    Scenario(
+        "ubi_vendor",
+        _ubi_vendor,
+        (
+            "ubi@0x2fc",
+            "ubi@0x2fc › kernel",
+            "ubi@0x2fc › kernel › fit@0x0",
+            "ubi@0x2fc › kernel › fit@0x0 › kernel-1",
+            "ubi@0x2fc › kernel › fit@0x0 › kernel-1 › lzma@0x0",
+            "ubi@0x2fc › kernel › fit@0x0 › fdt-1",
+            "ubi@0x2fc › rootfs",
+            UBI_ROOT,
+        ),
+        frozenset(
+            {
+                ("FWT-ACC-001", f"{UBI_ROOT} › /etc/passwd:2"),
+                ("FWT-ACC-004", f"{UBI_ROOT} › /etc/passwd:3"),
+                ("FWT-HRD-001", UBI_ROOT),
+                ("FWT-HRD-002", UBI_ROOT),
+                ("FWT-HRD-003", UBI_ROOT),
+                ("FWT-HRD-004", UBI_ROOT),
+                ("FWT-SVC-001", f"{UBI_ROOT} › /etc/inittab:2"),
+                ("FWT-SVC-002", f"{UBI_ROOT} › /etc/init.d/S50telnet:3"),
+                ("FWT-SVC-003", f"{UBI_ROOT} › /usr/sbin/tftpd"),
+                ("FWT-SVC-004", f"{UBI_ROOT} › /etc/init.d/S50telnet:3"),
+            }
+        ),
+        frozenset({"offline", "signing-undetermined"}),
+    ),
+    Scenario(
+        "sysupgrade_tar",
+        _sysupgrade_tar,
+        (
+            "tar@0x0",
+            "tar@0x0 › /sysupgrade-board/kernel",
+            "tar@0x0 › /sysupgrade-board/kernel › fit@0x0",
+            "tar@0x0 › /sysupgrade-board/kernel › fit@0x0 › kernel-1",
+            "tar@0x0 › /sysupgrade-board/kernel › fit@0x0 › kernel-1 › lzma@0x0",
+            "tar@0x0 › /sysupgrade-board/kernel › fit@0x0 › fdt-1",
+            "tar@0x0 › /sysupgrade-board/root",
+            "tar@0x0 › /sysupgrade-board/root › squashfs@0x0",
+        ),
+        frozenset({("FWT-SIG-001", "sysupgrade_tar.bin")}),
     ),
     Scenario(
         "signed_well",

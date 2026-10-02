@@ -127,9 +127,10 @@ verifies.
 
 | Kind | Formats |
 |---|---|
-| Container | U-Boot legacy uImage, U-Boot FIT, Broadcom TRX |
+| Container | U-Boot legacy uImage, U-Boot FIT, Broadcom TRX, UBI |
 | Compression | gzip, xz, LZMA, bzip2; zstd and LZO with `fwtriage[native]` |
 | Filesystem | SquashFS 4, CramFS (both endians), JFFS2 (zlib, LZMA, rtime), CPIO (newc, crc) |
+| Package | tar, zip (vendor downloads and sysupgrade images) |
 | Identified | ELF, flattened device tree (with its board and U-Boot verification keys), PEM, OpenWrt `fwtool` trailer |
 
 ## Usage

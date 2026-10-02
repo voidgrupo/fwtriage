@@ -42,6 +42,20 @@ First public release.
 - Service semantics: telnet whose login program is a shell (`FWT-SVC-005`), SSH accepting
   empty passwords (`FWT-SVC-006`), and `xinetd.d` as a startup source.
 - Notice `unattributed` when a meaningful share of the image belongs to no region.
+- UBI images reassembled into their volumes; tar and zip packages.
+- Validated against public vendor images (ASUS, TP-Link, Netgear, D-Link, Linksys,
+  Xiaomi, Ubiquiti, MikroTik, Teltonika, GL.iNet, Zyxel, Reolink, Turris) and two signed
+  FIT controls; the fixes that came out of it are below.
+- Signing is not judged absent when part of the image was not understood (notice
+  `signing-undetermined`); failed containers count as unattributed.
+- Services: links through directories resolved, conditional and gated starts are `likely`,
+  only installed daemons count, `respawnlate`, virtual consoles as indicators.
+- Components: OpenWrt `libc` named after the shipped library, no versions from library
+  file names, `-DEV` builds, three-part versions, package database authoritative.
+- Encrypted PEM private keys reported; repeated high-entropy and weak-signature findings
+  aggregated per artifact; parser errors never leak raw exception text.
+- Adverse-input and whole-pipeline robustness guards; a failing analyzer becomes notice
+  `analyzer-failed` instead of ending the scan.
 
 [Unreleased]: https://github.com/voidgrupo/fwtriage/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/voidgrupo/fwtriage/releases/tag/v0.1.0

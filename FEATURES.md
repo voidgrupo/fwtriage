@@ -98,9 +98,10 @@ probed no further. *Test: `test_regions`, corpus.*
 
 | Kind | Formats |
 |---|---|
-| container | U-Boot legacy uImage, U-Boot FIT (flattened device tree), Broadcom TRX |
+| container | U-Boot legacy uImage, U-Boot FIT (flattened device tree), Broadcom TRX, UBI (volumes reassembled from erase blocks) |
 | compression | gzip, xz, LZMA alone, bzip2; zstd and LZO with the optional `native` extra |
 | filesystem | SquashFS 4 (gzip, xz, LZMA; zstd and LZO with `native`), CramFS, JFFS2 (zlib, LZMA, rtime, none), CPIO (newc, crc) |
+| package | tar, zip: every member is scanned as an image, whatever its size |
 | identified, not unpacked | ELF, flattened device tree (with the board it describes and its U-Boot verification keys), PEM, OpenWrt `fwtool` trailer (metadata and signature) |
 
 A format the tool recognizes but cannot unpack without an extra produces notice
