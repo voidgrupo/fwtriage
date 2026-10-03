@@ -98,7 +98,7 @@ probed no further. *Test: `test_regions`, corpus.*
 
 | Kind | Formats |
 |---|---|
-| container | U-Boot legacy uImage, U-Boot FIT (flattened device tree), Broadcom TRX, UBI (volumes reassembled from erase blocks) |
+| container | U-Boot legacy uImage, U-Boot FIT (flattened device tree), Broadcom TRX, UBI (volumes reassembled from erase blocks), TP-Link safeloader, Xiaomi HDR1, MikroTik NPK, Netgear CHK, Reolink PAK |
 | compression | gzip, xz, LZMA alone, bzip2; zstd and LZO with the optional `native` extra |
 | filesystem | SquashFS 4 (gzip, xz, LZMA; zstd and LZO with `native`), CramFS, JFFS2 (zlib, LZMA, rtime, none), CPIO (newc, crc) |
 | package | tar, zip: every member is scanned as an image, whatever its size |
@@ -211,7 +211,12 @@ their payloads, and the engine judges it; this is image-level analysis, so it li
 | `004` signed configuration leaves images out | a configuration signature's `sign-images` omits an image the configuration loads | `confirmed` |
 | `005` bootloader key is not required | a device tree carries U-Boot verification keys under `/signature`, but no key is marked `required`, so an unsigned image still boots | `confirmed` |
 
-Every artifact that carries
+Vendor containers declare their signature too: TP-Link safeloader keeps an RSA block in
+its vendor area, Xiaomi HDR1 appends one; the block's byte length fixes the key size, so a
+128-byte block is an RSA-1024 signature whatever hash it uses. MikroTik NPK carries a
+signature part whose scheme is not public: it is reported as a vendor signature, never as
+weak. Netgear CHK and Reolink PAK define checksums and no signature field, so an image in
+those formats is judged like any image without a signature. Every artifact that carries
 signing facts reports them: the algorithms, the key names and
 what each signature covers. fwtriage does not check that a signature is cryptographically
 valid: it has no trusted key to check against, and presence, strength and coverage are

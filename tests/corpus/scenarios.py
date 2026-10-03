@@ -17,6 +17,7 @@ from .writers.tree import FileNode, LinkNode, Node
 from .writers.trx import trx
 from .writers.ubi import ubi
 from .writers.uimage import uimage
+from .writers.vendor import chk, hdr1, npk, pak, safeloader
 
 
 def noise(size: int, seed: str) -> bytes:
@@ -144,6 +145,30 @@ def _sysupgrade_tar() -> bytes:
             info.size, info.mtime = len(data), 0
             archive.addfile(info, io.BytesIO(data))
     return buffer.getvalue()
+
+
+def _tplink_safeloader() -> bytes:
+    kernel = uimage(kernel_payload(), "Linux Kernel Image", compression="lzma")
+    return safeloader({"os-image": kernel, "file-system": squashfs.write(clean_tree())})
+
+
+def _xiaomi_hdr1() -> bytes:
+    volumes = ubi([("rootfs", squashfs.write(clean_tree()))])
+    return hdr1({"xiaoqiang_version": b"ROM=1.0.0\n", "firmware_ubi.bin": volumes})
+
+
+def _mikrotik_npk() -> bytes:
+    return npk(squashfs.write(clean_tree()), {"boot": b"", "UPGRADED": b"7.24.5\n"})
+
+
+def _netgear_chk() -> bytes:
+    kernel = uimage(kernel_payload(), "Linux Kernel Image", compression="lzma")
+    return chk(kernel, squashfs.write(clean_tree()))
+
+
+def _reolink_pak() -> bytes:
+    kernel = uimage(kernel_payload(), "Linux Kernel Image", compression="lzma")
+    return pak({"kernel": kernel, "rootfs": squashfs.write(clean_tree())})
 
 
 UBI_ROOT = "ubi@0x2fc › rootfs › squashfs@0x0"
@@ -284,6 +309,72 @@ SCENARIOS = (
             "tar@0x0 › /sysupgrade-board/root › squashfs@0x0",
         ),
         frozenset({("FWT-SIG-001", "sysupgrade_tar.bin")}),
+    ),
+    Scenario(
+        "tplink_safeloader",
+        _tplink_safeloader,
+        (
+            "tplink@0x0",
+            "tplink@0x0 › os-image",
+            "tplink@0x0 › os-image › uimage@0x0",
+            "tplink@0x0 › os-image › uimage@0x0 › kernel",
+            "tplink@0x0 › os-image › uimage@0x0 › kernel › lzma@0x0",
+            "tplink@0x0 › file-system",
+            "tplink@0x0 › file-system › squashfs@0x0",
+        ),
+        frozenset({("FWT-SIG-002", "tplink@0x0")}),
+    ),
+    Scenario(
+        "xiaomi_hdr1",
+        _xiaomi_hdr1,
+        (
+            "xiaomi@0x0",
+            "xiaomi@0x0 › xiaoqiang_version",
+            "xiaomi@0x0 › firmware_ubi.bin",
+            "xiaomi@0x0 › firmware_ubi.bin › ubi@0x0",
+            "xiaomi@0x0 › firmware_ubi.bin › ubi@0x0 › rootfs",
+            "xiaomi@0x0 › firmware_ubi.bin › ubi@0x0 › rootfs › squashfs@0x0",
+        ),
+        frozenset(),
+    ),
+    Scenario(
+        "mikrotik_npk",
+        _mikrotik_npk,
+        (
+            "npk@0x0",
+            "npk@0x0 › /UPGRADED",
+            "npk@0x0 › squashfs",
+            "npk@0x0 › squashfs › squashfs@0x0",
+        ),
+        frozenset(),
+    ),
+    Scenario(
+        "netgear_chk",
+        _netgear_chk,
+        (
+            "chk@0x0",
+            "chk@0x0 › kernel",
+            "chk@0x0 › kernel › uimage@0x0",
+            "chk@0x0 › kernel › uimage@0x0 › kernel",
+            "chk@0x0 › kernel › uimage@0x0 › kernel › lzma@0x0",
+            "chk@0x0 › rootfs",
+            "chk@0x0 › rootfs › squashfs@0x0",
+        ),
+        frozenset({("FWT-SIG-001", "netgear_chk.bin")}),
+    ),
+    Scenario(
+        "reolink_pak",
+        _reolink_pak,
+        (
+            "pak@0x0",
+            "pak@0x0 › kernel",
+            "pak@0x0 › kernel › uimage@0x0",
+            "pak@0x0 › kernel › uimage@0x0 › kernel",
+            "pak@0x0 › kernel › uimage@0x0 › kernel › lzma@0x0",
+            "pak@0x0 › rootfs",
+            "pak@0x0 › rootfs › squashfs@0x0",
+        ),
+        frozenset({("FWT-SIG-001", "reolink_pak.bin")}),
     ),
     Scenario(
         "signed_well",

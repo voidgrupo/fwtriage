@@ -127,7 +127,7 @@ verifies.
 
 | Kind | Formats |
 |---|---|
-| Container | U-Boot legacy uImage, U-Boot FIT, Broadcom TRX, UBI |
+| Container | U-Boot legacy uImage, U-Boot FIT, Broadcom TRX, UBI, TP-Link safeloader, Xiaomi HDR1, MikroTik NPK, Netgear CHK, Reolink PAK |
 | Compression | gzip, xz, LZMA, bzip2; zstd and LZO with `fwtriage[native]` |
 | Filesystem | SquashFS 4, CramFS (both endians), JFFS2 (zlib, LZMA, rtime), CPIO (newc, crc) |
 | Package | tar, zip (vendor downloads and sysupgrade images) |

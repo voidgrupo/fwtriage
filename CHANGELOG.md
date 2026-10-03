@@ -43,6 +43,9 @@ First public release.
   empty passwords (`FWT-SVC-006`), and `xinetd.d` as a startup source.
 - Notice `unattributed` when a meaningful share of the image belongs to no region.
 - UBI images reassembled into their volumes; tar and zip packages.
+- TP-Link safeloader and Xiaomi HDR1 containers, with their vendor signatures and key sizes.
+- MikroTik NPK packages (squashfs, file container, signature part), Netgear CHK and
+  Reolink PAK containers.
 - Validated against public vendor images (ASUS, TP-Link, Netgear, D-Link, Linksys,
   Xiaomi, Ubiquiti, MikroTik, Teltonika, GL.iNet, Zyxel, Reolink, Turris) and two signed
   FIT controls; the fixes that came out of it are below.

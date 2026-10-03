@@ -11,8 +11,14 @@ from .squashfs import Squashfs
 from .trx import Trx
 from .ubi import Ubi
 from .uimage import UImage
+from .vendor import MikrotikNpk, NetgearChk, ReolinkPak, TplinkSafeloader, XiaomiHdr1
 
 REGISTRY: tuple[Format, ...] = (
+    TplinkSafeloader(),
+    XiaomiHdr1(),
+    MikrotikNpk(),
+    NetgearChk(),
+    ReolinkPak(),
     UImage(),
     Fit(),
     Trx(),
