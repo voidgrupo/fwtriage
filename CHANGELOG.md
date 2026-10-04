@@ -46,6 +46,7 @@ First public release.
 - TP-Link safeloader and Xiaomi HDR1 containers, with their vendor signatures and key sizes.
 - MikroTik NPK packages (squashfs, file container, signature part), Netgear CHK and
   Reolink PAK containers.
+- Kernels and boot loaders shipped as ELF files are no longer judged for userland hardening.
 - Validated against public vendor images (ASUS, TP-Link, Netgear, D-Link, Linksys,
   Xiaomi, Ubiquiti, MikroTik, Teltonika, GL.iNet, Zyxel, Reolink, Turris) and two signed
   FIT controls; the fixes that came out of it are below.

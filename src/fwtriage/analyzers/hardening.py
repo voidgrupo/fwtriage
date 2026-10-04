@@ -1,4 +1,5 @@
 import io
+import posixpath
 import struct
 from collections.abc import Callable
 
@@ -16,6 +17,7 @@ DF_1_PIE = 0x08000000
 CANARY = {"__stack_chk_fail", "__stack_chk_guard", "__stack_chk_fail_local"}
 LISTED = 8
 MAX_SYMBOLS = 100_000
+KERNEL_NAMES = ("vmlinux", "vmlinuz", "kernel", "zImage", "uImage")
 
 Check = tuple[str, str, Callable[[BinaryProfile], bool]]
 CHECKS: tuple[Check, ...] = (
@@ -39,7 +41,7 @@ def profile(entry: Entry, artifact: str) -> BinaryProfile | None:
         return None
     try:
         elf = ELFFile(io.BytesIO(entry.data))
-        if not _is_executable(elf):
+        if not _is_executable(elf) or _is_bare_metal(elf, entry.path):
             return None
         static = _is_static(elf)
         imports = set() if static else _imports(elf)
@@ -57,6 +59,14 @@ def _is_executable(elf: ELFFile) -> bool:
     if elf.header.e_type == "ET_EXEC":
         return True
     return _has_segment(elf, "PT_INTERP") or _flags_1(elf) & DF_1_PIE != 0
+
+
+def _is_bare_metal(elf: ELFFile, path: str) -> bool:
+    """Kernels and boot loaders are ELF executables too, but no userland hardening applies to them."""
+    if _has_segment(elf, "PT_INTERP") or _has_segment(elf, "PT_GNU_STACK"):
+        return False
+    loads = sum(1 for segment in elf.iter_segments() if segment.header.p_type == "PT_LOAD")
+    return loads == 1 or path.startswith("/boot/") or posixpath.basename(path).startswith(KERNEL_NAMES)
 
 
 def _is_static(elf: ELFFile) -> bool:

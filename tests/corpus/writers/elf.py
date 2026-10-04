@@ -20,6 +20,7 @@ class Profile:
     imports: tuple[str, ...] = ("__stack_chk_fail", "printf")
     gnu_hash: bool = False
     static: bool = False
+    bare_metal: bool = False
 
 
 DEFAULT = Profile()
@@ -31,6 +32,8 @@ def executable(profile: Profile = DEFAULT) -> bytes:
     The symbol table comes before the string table, as linkers lay them out. With `gnu_hash`
     the only hash table is a GNU one written for an executable that exports nothing, which
     makes a naive reader see a single symbol."""
+    if profile.bare_metal:
+        return _bare_metal()
     if profile.static:
         return _static(profile)
     strings = b"\0" + b"".join(name.encode() + b"\0" for name in profile.imports)
@@ -57,6 +60,13 @@ def _static(profile: Profile) -> bytes:
     headers = [(PT_LOAD, PF_R | PF_X, 0, end, 0x1000), (PT_GNU_STACK, stack_flags, 0, 0, 16)]
     packed = b"".join(struct.pack("<IIQQQQQQ", k, f, at, at, at, size, size, a) for k, f, at, size, a in headers)
     return _elf_header(Profile(pie=False), 2) + packed
+
+
+def _bare_metal() -> bytes:
+    """A kernel or boot loader: one loadable segment and no stack marking."""
+    end = EHDR + PHDR
+    header = struct.pack("<IIQQQQQQ", PT_LOAD, PF_R | PF_W | PF_X, 0, 0, 0, end, end, 0x1000)
+    return _elf_header(Profile(pie=False), 1) + header
 
 
 def _hash_table(profile: Profile) -> bytes:

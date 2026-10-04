@@ -186,7 +186,9 @@ from program headers and the dynamic segment; the dynamic symbol table is sized 
 section header, or from where the string table starts when sections were stripped, never
 from the GNU hash alone. A statically linked executable imports nothing, so stack
 protector and fortify are not judged for it, and the report says how many were skipped.
-One finding per rule, listing the binaries. *Test: `test_hardening`.*
+Kernels and boot loaders shipped as ELF files (no interpreter, no stack marking, and a
+single loadable segment, a `/boot/` path or a kernel name) are not userland programs and
+are not judged. One finding per rule, listing the binaries. *Test: `test_hardening`.*
 
 **F12 — Vulnerabilities** (`FWT-VUL-001`). Only with `--online` (`R2`). Each component
 with a CPE is matched against NVD; the finding's severity follows the highest CVSS base

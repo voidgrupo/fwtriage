@@ -52,3 +52,9 @@ def test_static_executables_are_counted_but_not_judged_for_canary() -> None:
     assert [b.static for b in sorted(analysis.binaries, key=lambda b: b.path)] == [False, True]
     assert "FWT-HRD-001" not in rules(analysis)
 
+
+def test_kernels_and_boot_loaders_are_not_judged() -> None:
+    fs = filesystem(
+        {"/boot/kernel": executable(Profile(bare_metal=True)), "/bin/static": executable(Profile(static=True))}
+    )
+    assert [b.path for b in run(Hardening(), fs).binaries] == ["/bin/static"]
