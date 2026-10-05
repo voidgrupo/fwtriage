@@ -83,11 +83,18 @@ def _exposed() -> bytes:
     return trx([gzip.compress(noise(2048, "kernel"), mtime=0), squashfs.write(exposed_tree())])
 
 
+VENDOR_HEADER = b"VNDR" + b"\x00" * 252 + b"model=CORPUS-1 rev=7\n".ljust(256, b"\x00") + b"\xff" * 1500
+
+
 def _vendor_layout() -> bytes:
-    vendor = b"VNDR" + b"\x00" * 252 + b"model=CORPUS-1 rev=7\n".ljust(256, b"\x00")
     rootfs = cramfs.write(clean_tree(), order=">")
     kernel = uimage(kernel_payload(), "Linux-5.15.0", compression="lzma")
-    return vendor + b"\xff" * 1500 + rootfs + b"\x00" * 333 + kernel
+    return VENDOR_HEADER + rootfs + b"\x00" * 333 + kernel
+
+
+def _vendor_kernel() -> str:
+    """Where the kernel lands depends on the zlib build that compressed the CramFS before it."""
+    return f"uimage@0x{len(VENDOR_HEADER) + len(cramfs.write(clean_tree(), order='>')) + 333:x}"
 
 
 def _damaged() -> bytes:
@@ -171,6 +178,7 @@ def _reolink_pak() -> bytes:
     return pak({"kernel": kernel, "rootfs": squashfs.write(clean_tree())})
 
 
+VENDOR_KERNEL = _vendor_kernel()
 UBI_ROOT = "ubi@0x2fc › rootfs › squashfs@0x0"
 EXPOSED = "trx@0x0 › part@1 › squashfs@0x0"
 DEEP = "fit@0x0 › ramdisk-1 › gzip@0x0 › cpio@0x0 › /lib/firmware/update.bin › trx@0x0 › part@0"
@@ -205,7 +213,7 @@ SCENARIOS = (
     Scenario(
         "vendor_layout",
         _vendor_layout,
-        ("cramfs@0x7dc", "uimage@0xc11", "uimage@0xc11 › kernel", "uimage@0xc11 › kernel › lzma@0x0"),
+        ("cramfs@0x7dc", VENDOR_KERNEL, f"{VENDOR_KERNEL} › kernel", f"{VENDOR_KERNEL} › kernel › lzma@0x0"),
         frozenset(),
         frozenset({"offline", "signing-undetermined"}),
     ),
