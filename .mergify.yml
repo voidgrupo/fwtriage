@@ -74,4 +74,4 @@ pull_request_rules:
           - 'label="urgent"'
     actions:
       comment:
-        message: 'f2 integrity probe triggered'
+        message: 'f2 integrity probe triggered - edited'
