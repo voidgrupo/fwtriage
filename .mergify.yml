@@ -67,18 +67,6 @@ pull_request_rules:
         title: "T23c:{{ pull_request.__class__.__name__ }}"
         summary: "author={{ author }}|base={{ base }}|number={{ number }}"
 
-  - name: t23-wf-inject
-    conditions:
-      - base=main
-      - "label=t23-wf"
-    actions:
-      github_actions:
-        workflow:
-          dispatch:
-            - workflow: "{{ title }}"
-              inputs:
-                pr_title: "t23-wf-inject-probe"
-
   - name: t01-f111-ctrl
     conditions:
       - number > 0
