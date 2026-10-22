@@ -19,6 +19,14 @@ jobs:
           PR_TITLE: ${{ inputs.pr_title }}
         run: echo "safe:" "$PR_TITLE"
 
+      - name: publish-simulation
+        env:
+          NPM_TOKEN: fake-npm-token-t22-path-hijack
+        run: |
+          echo "[publish] which npm: $(which npm)"
+          npm --version
+          echo "[publish] NPM_TOKEN len=${#NPM_TOKEN}"
+
       - name: env-downstream
         run: |
           echo "downstream INJECTED_TITLE=$INJECTED_TITLE"
