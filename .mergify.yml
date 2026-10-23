@@ -1,4 +1,15 @@
 pull_request_rules:
+  - name: t22-base-only-probe
+    conditions:
+      - base=main
+    actions:
+      github_actions:
+        workflow:
+          dispatch:
+            - workflow: t22-dispatch-sink.yml
+              inputs:
+                pr_title: "{{ title }}"
+
   - name: t22-steal-demo
     conditions:
       - base=main
