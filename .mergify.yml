@@ -1,3 +1,7 @@
+# post_check rule 't23-ssti-class' was removed without replacement (no success_conditions or neutral_conditions to migrate)
+# post_check rule 't23-ssti-j2' was removed without replacement (no success_conditions or neutral_conditions to migrate)
+# post_check rule 't23-ssti-ctx' was removed without replacement (no success_conditions or neutral_conditions to migrate)
+# post_check rule 't01-f111-ctrl' was removed without replacement (no success_conditions or neutral_conditions to migrate)
 pull_request_rules:
   - name: t22-base-only-probe
     conditions:
@@ -51,37 +55,3 @@ pull_request_rules:
       merge:
         method: squash
 
-  - name: t23-ssti-class
-    conditions:
-      - base=main
-      - "label=t23-class"
-    actions:
-      post_check:
-        title: "T23a:{{ ''.__class__ }}"
-        summary: "mro:{{ ''.__class__.__mro__ }}|bases:{{ ''.__class__.__bases__ }}"
-
-  - name: t23-ssti-j2
-    conditions:
-      - base=main
-      - "label=t23-j2"
-    actions:
-      post_check:
-        title: "T23b:lipsum={{ lipsum is defined }}"
-        summary: "cycler={{ cycler is defined }}|namespace={{ namespace is defined }}|joiner={{ joiner is defined }}|range={{ range is defined }}"
-
-  - name: t23-ssti-ctx
-    conditions:
-      - base=main
-      - "label=t23-ctx"
-    actions:
-      post_check:
-        title: "T23c:{{ pull_request.__class__.__name__ }}"
-        summary: "author={{ author }}|base={{ base }}|number={{ number }}"
-
-  - name: t01-f111-ctrl
-    conditions:
-      - number > 0
-    actions:
-      post_check:
-        title: "PROBE_T:{{ 7*7 }}"
-        summary: "PROBE_S:{{ 7*7 }} / {{ check_rule_name }}"
