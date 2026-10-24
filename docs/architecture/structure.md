@@ -1,7 +1,7 @@
 # Structure
 
 Where everything lives, and why. Layers and their import rules are `R8` and
-[`ARCHITECTURE.md`](../../ARCHITECTURE.md) §4; this document places files inside them.
+[`ARCHITECTURE.md`](https://github.com/voidgrupo/fwtriage/blob/main/ARCHITECTURE.md) §4; this document places files inside them.
 
 ## Contents
 
