@@ -1,0 +1,74 @@
+site_name: fwtriage
+site_description: Fast, evidence-first security triage for firmware images
+site_url: https://voidgrupo.github.io/fwtriage/
+repo_url: https://github.com/voidgrupo/fwtriage
+repo_name: voidgrupo/fwtriage
+edit_uri: edit/main/docs/
+copyright: Apache-2.0 · Void Security
+strict: true
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Overview: index.md
+  - Rules reference: rules.md
+  - Architecture:
+      - Structure: architecture/structure.md
+      - Formats: architecture/formats.md
+      - Analyzers: architecture/analyzers.md
+      - Guards: architecture/guards.md
+      - Testing: architecture/testing.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/voidgrupo/fwtriage

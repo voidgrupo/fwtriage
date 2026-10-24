@@ -35,6 +35,7 @@ native = [
 
 [project.urls]
 Homepage = "https://github.com/voidgrupo/fwtriage"
+Documentation = "https://voidgrupo.github.io/fwtriage/"
 Issues = "https://github.com/voidgrupo/fwtriage/issues"
 Changelog = "https://github.com/voidgrupo/fwtriage/blob/main/CHANGELOG.md"
 
@@ -49,6 +50,9 @@ dev = [
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "ruff>=0.16.10",
+]
+docs = [
+    "mkdocs-material>=9.5",
 ]
 
 [build-system]
