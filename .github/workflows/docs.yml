@@ -26,6 +26,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
+      - run: sudo apt-get install -y libcairo2 libpango-1.0-0 libpangoft2-1.0-0
       - run: uv sync --group docs
       - run: uv run mkdocs build --strict
       - uses: actions/upload-pages-artifact@v3

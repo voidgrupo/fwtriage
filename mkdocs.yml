@@ -4,7 +4,9 @@ site_url: https://voidgrupo.github.io/fwtriage/
 repo_url: https://github.com/voidgrupo/fwtriage
 repo_name: voidgrupo/fwtriage
 edit_uri: edit/main/docs/
-copyright: Apache-2.0 · Void Security
+copyright: >
+  Apache-2.0 ·
+  <a href="https://github.com/voidgrupo">Void Security</a>
 strict: true
 
 theme:
@@ -13,6 +15,7 @@ theme:
     - navigation.sections
     - navigation.top
     - navigation.tracking
+    - navigation.footer
     - toc.follow
     - content.code.copy
     - content.action.edit
@@ -51,10 +54,14 @@ markdown_extensions:
   - attr_list
   - def_list
   - footnotes
+  - md_in_html
   - tables
   - toc:
       permalink: true
   - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -67,6 +74,10 @@ markdown_extensions:
 
 plugins:
   - search
+  - social:
+      cards_layout_options:
+        background_color: "#0f0f10"
+        color: "#f5f5f5"
 
 extra:
   social:

@@ -52,7 +52,7 @@ dev = [
     "ruff>=0.16.10",
 ]
 docs = [
-    "mkdocs-material>=9.5",
+    "mkdocs-material[imaging]>=9.5",
 ]
 
 [build-system]
